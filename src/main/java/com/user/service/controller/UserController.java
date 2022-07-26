@@ -1,6 +1,7 @@
 package com.user.service.controller;
 
 import com.user.service.dto.UserDto;
+import com.user.service.jpa.UserEntity;
 import com.user.service.service.UserService;
 import com.user.service.vo.Greeting;
 import com.user.service.vo.RequestUser;
@@ -15,8 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
-@RequestMapping("/user-service")
+@RequestMapping("/user_service")
 @Slf4j
 public class UserController {
 
@@ -34,8 +38,9 @@ public class UserController {
 
     @GetMapping("/health_check")
     public String status() {
-        log.info("port: {}",env.getProperty("localhost.server.port"));
-        return String.format("Its's working in User Service on PORT %s", env.getProperty("localhost.server.port"));
+        log.info("port: {}",env.getProperty("local.server.port"));
+//        return String.format("Its's working in User Service on PORT %s", env.getProperty("local.server.port"));
+        return String.format("It's working in User Service on PORT %s", env.getProperty("local.server.port"));
     }
 
     @GetMapping("/welcome")
@@ -55,4 +60,26 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseUser);
     }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<ResponseUser>> getUsers() {
+        Iterable<UserEntity> userList = userService.getUserByAll();
+        List<ResponseUser> result = new ArrayList<>();
+
+        userList.forEach(v->{
+            result.add(new ModelMapper().map(v, ResponseUser.class));
+        });
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ResponseUser> getUser(@PathVariable("userId") String userId) {
+        UserDto userDto = userService.getUserByUserId(userId);
+
+        ResponseUser returnValue = new ModelMapper().map(userDto, ResponseUser.class);
+
+        return ResponseEntity.status(HttpStatus.OK).body(returnValue);
+    }
+
 }
