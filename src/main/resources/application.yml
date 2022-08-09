@@ -14,10 +14,35 @@ spring:
   cloud:
     gateway:
       routes:
+#        - id: user-service
+#          uri: lb://USER-SERVICE
+#          predicates:
+#            - Path=/user_service/**
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user_service/login
+            - Method=POST
+          filter:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user_service/(?<segment>.*), /$\{segment}
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user_service/users
+            - Method=POST
+          filter:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user_service/(?<segment>.*), /$\{segment}
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
             - Path=/user_service/**
+            - Method=GET
+          filter:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user_service/(?<segment>.*), /$\{segment}
+            - AuthorizationHeaderFilter
         - id: catalog-service
           uri: lb://CATALOG-SERVICE
           predicates:
